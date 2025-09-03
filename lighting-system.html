@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>灯具产品展示系统</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb', // 主色调：蓝色，传达专业和信任感
+            secondary: '#f97316', // 辅助色：橙色，用于强调和交互元素
+            neutral: {
+              100: '#f3f4f6',
+              200: '#e5e7eb',
+              300: '#d1d5db',
+              400: '#9ca3af',
+              500: '#6b7280',
+              600: '#4b5563',
+              700: '#374151',
+              800: '#1f2937',
+              900: '#111827',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .transition-height {
+        transition: max-height 0.3s ease-in-out;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg;
+      }
+      .btn-secondary {
+        @apply bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-all shadow-md hover:shadow-lg;
+      }
+      .btn-outline {
+        @apply border border-neutral-300 text-neutral-700 px-4 py-2 rounded-lg hover:bg-neutral-100 transition-all;
+      }
+      .form-input {
+        @apply w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-neutral-100 text-neutral-800 min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header class="sticky top-0 z-50 bg-white shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <i class="fa fa-lightbulb-o text-secondary text-2xl"></i>
+          <h1 class="text-xl md:text-2xl font-bold text-neutral-800">照明灯具展示系统</h1>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <button id="view-mode-btn" class="btn-outline flex items-center">
+            <i class="fa fa-eye mr-2"></i>
+            <span>前台展示</span>
+          </button>
+          <button id="admin-mode-btn" class="btn-primary flex items-center">
+            <i class="fa fa-cog mr-2"></i>
+            <span>后台管理</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-1 container mx-auto px-4 py-8">
+    <!-- 前台展示区 -->
+    <section id="frontend-view" class="space-y-8">
+      <!-- 大类导航 -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold mb-6 text-neutral-800">产品大类</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="main-categories">
+          <!-- 大类将通过JavaScript动态生成 -->
+        </div>
+      </div>
+      
+      <!-- 小类和产品展示 -->
+      <div id="products-section" class="hidden">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- 小类侧边栏 -->
+          <div class="w-full md:w-1/4 lg:w-1/5">
+            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+              <h3 class="text-lg font-bold mb-4 text-neutral-800" id="current-main-category">小类列表</h3>
+              <ul class="space-y-2" id="sub-categories">
+                <!-- 小类将通过JavaScript动态生成 -->
+              </ul>
+            </div>
+          </div>
+          
+          <!-- 产品列表 -->
+          <div class="w-full md:w-3/4 lg:w-4/5">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-neutral-800" id="current-sub-category">产品列表</h3>
+                <button id="back-to-main" class="btn-outline text-sm">
+                  <i class="fa fa-arrow-left mr-1"></i> 返回大类
+                </button>
+              </div>
+              
+              <div class="space-y-6" id="products-list">
+                <!-- 产品将通过JavaScript动态生成 -->
+              </div>
+              
+              <!-- 无产品提示 -->
+              <div id="no-products" class="py-12 text-center hidden">
+                <i class="fa fa-lightbulb-o text-4xl text-neutral-300 mb-4"></i>
+                <p class="text-neutral-500">该分类下暂无产品</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 后台管理区 -->
+    <section id="admin-view" class="hidden space-y-8">
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold mb-6 text-neutral-800">后台管理</h2>
+        
+        <!-- 管理标签页 -->
+        <div class="border-b border-neutral-200 mb-6">
+          <div class="flex space-x-8">
+            <button class="admin-tab py-2 border-b-2 border-primary text-primary font-medium" data-tab="main-categories">
+              大类管理
+            </button>
+            <button class="admin-tab py-2 border-b-2 border-transparent text-neutral-500 hover:text-neutral-700" data-tab="sub-categories">
+              小类管理
+            </button>
+            <button class="admin-tab py-2 border-b-2 border-transparent text-neutral-500 hover:text-neutral-700" data-tab="products">
+              产品管理
+            </button>
+          </div>
+        </div>
+        
+        <!-- 大类管理 -->
+        <div class="admin-content" id="main-categories-content">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="font-bold text-lg">大类列表</h3>
+            <button id="add-main-category-btn" class="btn-primary">
+              <i class="fa fa-plus mr-2"></i> 添加大类
+            </button>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">小类数量</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-neutral-200" id="main-categories-table">
+                <!-- 大类数据将通过JavaScript动态生成 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- 小类管理 -->
+        <div class="admin-content hidden" id="sub-categories-content">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+              <h3 class="font-bold text-lg">小类列表</h3>
+              <p class="text-neutral-500 text-sm">选择一个大类来管理其小类</p>
+            </div>
+            <div class="flex gap-4 w-full md:w-auto">
+              <select id="select-main-for-sub" class="form-input">
+                <option value="">-- 选择大类 --</option>
+                <!-- 大类选项将通过JavaScript动态生成 -->
+              </select>
+              <button id="add-sub-category-btn" class="btn-primary" disabled>
+                <i class="fa fa-plus mr-2"></i> 添加小类
+              </button>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">所属大类</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">产品数量</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-neutral-200" id="sub-categories-table">
+                <!-- 小类数据将通过JavaScript动态生成 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- 产品管理 -->
+        <div class="admin-content hidden" id="products-content">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+              <h3 class="font-bold text-lg">产品列表</h3>
+              <p class="text-neutral-500 text-sm">选择一个小类来管理其产品</p>
+            </div>
+            <div class="flex gap-4 w-full md:w-auto">
+              <select id="select-main-for-product" class="form-input">
+                <option value="">-- 选择大类 --</option>
+                <!-- 大类选项将通过JavaScript动态生成 -->
+              </select>
+              <select id="select-sub-for-product" class="form-input" disabled>
+                <option value="">-- 选择小类 --</option>
+                <!-- 小类选项将通过JavaScript动态生成 -->
+              </select>
+              <button id="add-product-btn" class="btn-primary" disabled>
+                <i class="fa fa-plus mr-2"></i> 添加产品
+              </button>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">所属分类</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">图片</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-neutral-200" id="products-table">
+                <!-- 产品数据将通过JavaScript动态生成 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 模态框 - 添加/编辑大类 -->
+  <div id="main-category-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/50" id="modal-overlay"></div>
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative z-10 transform transition-all">
+      <h3 class="text-lg font-bold mb-4" id="main-category-modal-title">添加大类</h3>
+      <form id="main-category-form">
+        <input type="hidden" id="main-category-id">
+        <div class="mb-4">
+          <label for="main-category-name" class="block text-sm font-medium text-neutral-700 mb-1">大类名称</label>
+          <input type="text" id="main-category-name" class="form-input" placeholder="例如：筒灯" required>
+        </div>
+        <div class="mb-4">
+          <label for="main-category-desc" class="block text-sm font-medium text-neutral-700 mb-1">描述（可选）</label>
+          <textarea id="main-category-desc" class="form-input" rows="3" placeholder="输入大类描述"></textarea>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button type="button" id="cancel-main-category" class="btn-outline">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 模态框 - 添加/编辑小类 -->
+  <div id="sub-category-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/50" id="modal-overlay-2"></div>
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative z-10 transform transition-all">
+      <h3 class="text-lg font-bold mb-4" id="sub-category-modal-title">添加小类</h3>
+      <form id="sub-category-form">
+        <input type="hidden" id="sub-category-id">
+        <input type="hidden" id="sub-category-main-id">
+        <div class="mb-4">
+          <label for="sub-category-main-name" class="block text-sm font-medium text-neutral-700 mb-1">所属大类</label>
+          <input type="text" id="sub-category-main-name" class="form-input" readonly>
+        </div>
+        <div class="mb-4">
+          <label for="sub-category-name" class="block text-sm font-medium text-neutral-700 mb-1">小类名称</label>
+          <input type="text" id="sub-category-name" class="form-input" placeholder="例如：嵌入式筒灯" required>
+        </div>
+        <div class="mb-4">
+          <label for="sub-category-desc" class="block text-sm font-medium text-neutral-700 mb-1">描述（可选）</label>
+          <textarea id="sub-category-desc" class="form-input" rows="3" placeholder="输入小类描述"></textarea>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button type="button" id="cancel-sub-category" class="btn-outline">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 模态框 - 添加/编辑产品 -->
+  <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/50" id="modal-overlay-3"></div>
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-2xl relative z-10 transform transition-all max-h-[90vh] overflow-y-auto">
+      <h3 class="text-lg font-bold mb-4" id="product-modal-title">添加产品</h3>
+      <form id="product-form">
+        <input type="hidden" id="product-id">
+        <input type="hidden" id="product-main-id">
+        <input type="hidden" id="product-sub-id">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label for="product-main-name" class="block text-sm font-medium text-neutral-700 mb-1">所属大类</label>
+            <input type="text" id="product-main-name" class="form-input" readonly>
+          </div>
+          <div>
+            <label for="product-sub-name" class="block text-sm font-medium text-neutral-700 mb-1">所属小类</label>
+            <input type="text" id="product-sub-name" class="form-input" readonly>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="product-name" class="block text-sm font-medium text-neutral-700 mb-1">产品名称</label>
+          <input type="text" id="product-name" class="form-input" placeholder="输入产品名称" required>
+        </div>
+        
+        <div class="mb-4">
+          <label for="product-image" class="block text-sm font-medium text-neutral-700 mb-1">产品图片URL</label>
+          <input type="url" id="product-image" class="form-input" placeholder="例如：https://example.com/image.jpg" required>
+          <p class="text-xs text-neutral-500 mt-1">请输入有效的图片URL地址</p>
+        </div>
+        
+        <div class="mb-4">
+          <label for="product-desc" class="block text-sm font-medium text-neutral-700 mb-1">产品说明</label>
+          <textarea id="product-desc" class="form-input" rows="6" placeholder="输入产品详细说明，将显示在图片右侧" required></textarea>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button type="button" id="cancel-product" class="btn-outline">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 确认删除模态框 -->
+  <div id="confirm-delete-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/50" id="modal-overlay-4"></div>
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative z-10 transform transition-all">
+      <h3 class="text-lg font-bold mb-2">确认删除</h3>
+      <p class="text-neutral-600 mb-6" id="delete-confirmation-text">您确定要删除这项吗？此操作无法撤销。</p>
+      <input type="hidden" id="delete-id">
+      <input type="hidden" id="delete-type">
+      <div class="flex justify-end space-x-3">
+        <button id="cancel-delete" class="btn-outline">取消</button>
+        <button id="confirm-delete" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+          <i class="fa fa-trash mr-2"></i> 删除
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 页脚 -->
+  <footer class="bg-white border-t border-neutral-200 py-8 mt-16">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <i class="fa fa-lightbulb-o text-secondary text-xl"></i>
+          <span class="font-bold text-neutral-800">照明灯具展示系统</span>
+        </div>
+        <div class="text-neutral-500 text-sm">
+          &copy; 2023 照明灯具展示系统. 保留所有权利。
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 数据模型
+    let data = {
+      mainCategories: [
+        { id: 1, name: '筒灯', description: '各类筒灯产品展示' },
+        { id: 2, name: '射灯', description: '各类射灯产品展示' },
+        { id: 3, name: '磁吸灯', description: '各类磁吸灯产品展示' }
+      ],
+      subCategories: [
+        { id: 1, mainId: 1, name: '嵌入式筒灯', description: '嵌入式安装的筒灯' },
+        { id: 2, mainId: 1, name: '明装筒灯', description: '明装式安装的筒灯' },
+        { id: 3, mainId: 2, name: '轨道射灯', description: '安装在轨道上的射灯' },
+        { id: 4, mainId: 2, name: '天花射灯', description: '安装在天花板的射灯' },
+        { id: 5, mainId: 3, name: '磁吸轨道灯', description: '磁吸式轨道灯' },
+        { id: 6, mainId: 3, name: '磁吸格栅灯', description: '磁吸式格栅灯' }
+      ],
+      products: [
+        { 
+          id: 1, 
+          mainId: 1, 
+          subId: 1, 
+          name: 'LED嵌入式筒灯', 
+          image: 'https://picsum.photos/seed/downlight1/400/400', 
+          description: '这款LED嵌入式筒灯采用高品质铝材制造，散热性能优异。功率12W，色温可调（3000K-6500K），亮度高达1000流明。适合安装在客厅、卧室、办公室等场所，提供均匀柔和的照明效果。'
+        },
+        { 
+          id: 2, 
+          mainId: 1, 
+          subId: 2, 
+          name: '超薄明装筒灯', 
+          image: 'https://picsum.photos/seed/downlight2/400/400', 
+          description: '超薄设计的明装筒灯，厚度仅3cm，美观大方。无需开孔即可安装，安装便捷。采用节能LED芯片，寿命长达50000小时。IP44防水等级，可用于浴室等潮湿环境。'
+        },
+        { 
+          id: 3, 
+          mainId: 2, 
+          subId: 3, 
+          name: 'COB轨道射灯', 
+          image: 'https://picsum.photos/seed/spotlight1/400/400', 
+          description: 'COB轨道射灯采用高品质COB芯片，光效高达120lm/W。光束角可调（15°-60°），满足不同照明需求。显色指数Ra90以上，色彩还原度高，适合商场、展厅等需要突出展品的场所。'
+        },
+        { 
+          id: 4, 
+          mainId: 3, 
+          subId: 5, 
+          name: '磁吸轨道灯套装', 
+          image: 'https://picsum.photos/seed/magnetic1/400/400', 
+          description: '磁吸轨道灯套装包含1米轨道和3个灯具。采用磁吸设计，安装拆卸方便，可任意调节位置。功率20W，色温4000K中性光。适用于客厅、书房、展厅等场所，现代简约风格。'
+        }
+      ]
+    };
+    
+    // 初始化数据
+    function initData() {
+      const savedData = localStorage.getItem('lightingData');
+      if (savedData) {
+        data = JSON.parse(savedData);
+      } else {
+        saveData();
+      }
+    }
+    
+    // 保存数据到本地存储
+    function saveData() {
+      localStorage.setItem('lightingData', JSON.stringify(data));
+    }
+    
+    // DOM元素
+    const frontendView = document.getElementById('frontend-view');
+    const adminView = document.getElementById('admin-view');
+    const viewModeBtn = document.getElementById('view-mode-btn');
+    const adminModeBtn = document.getElementById('admin-mode-btn');
+    const mainCategoriesContainer = document.getElementById('main-categories');
+    const subCategoriesContainer = document.getElementById('sub-categories');
+    const productsList = document.getElementById('products-list');
+    const productsSection = document.getElementById('products-section');
+    const currentMainCategoryEl = document.getElementById('current-main-category');
+    const currentSubCategoryEl = document.getElementById('current-sub-category');
+    const backToMainBtn = document.getElementById('back-to-main');
+    const noProductsEl = document.getElementById('no-products');
+    
+    // 后台管理元素
+    const adminTabs = document.querySelectorAll('.admin-tab');
+    const adminContents = document.querySelectorAll('.admin-content');
+    const mainCategoriesTable = document.getElementById('main-categories-table');
+    const subCategoriesTable = document.getElementById('sub-categories-table');
+    const productsTable = document.getElementById('products-table');
+    const selectMainForSub = document.getElementById('select-main-for-sub');
+    const selectMainForProduct = document.getElementById('select-main-for-product');
+    const selectSubForProduct = document.getElementById('select-sub-for-product');
+    
+    // 模态框元素
+    const mainCategoryModal = document.getElementById('main-category-modal');
+    const subCategoryModal = document.getElementById('sub-category-modal');
+    const productModal = document.getElementById('product-modal');
+    const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+    const modalOverlays = document.querySelectorAll('[id^="modal-overlay"]');
+    
+    // 初始化页面
+    function init() {
+      initData();
+      renderFrontend();
+      renderAdmin();
+      setupEventListeners();
+    }
+    
+    // 渲染前台展示
+    function renderFrontend() {
+      renderMainCategories();
+    }
+    
+    // 渲染大类
+    function renderMainCategories() {
+      mainCategoriesContainer.innerHTML = '';
+      
+      data.mainCategories.forEach(category => {
+        // 计算该大类下的小类数量
+        const subCount = data.subCategories.filter(sub => sub.mainId === category.id).length;
+        
+        const categoryCard = document.createElement('div');
+        categoryCard.className = 'bg-white border border-neutral-200 rounded-xl p-6 card-hover cursor-pointer';
+        categoryCard.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-neutral-800">${category.name}</h3>
+            <span class="bg-primary/10 text-primary text-sm px-2 py-1 rounded-full">${subCount}个小类</span>
+          </div>
+          <p class="text-neutral-600 text-sm mb-4">${category.description || '暂无描述'}</p>
+          <button class="view-sub-categories text-primary hover:text-primary/80 font-medium flex items-center" data-id="${category.id}">
+            查看小类 <i class="fa fa-arrow-right ml-2"></i>
+          </button>
+        `;
+        
+        mainCategoriesContainer.appendChild(categoryCard);
+      });
+      
+      // 添加查看小类事件
+      document.querySelectorAll('.view-sub-categories').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const mainId = parseInt(e.currentTarget.dataset.id);
+          showSubCategories(mainId);
+        });
+      });
+    }
+    
+    // 显示小类
+    function showSubCategories(mainId) {
+      const mainCategory = data.mainCategories.find(cat => cat.id === mainId);
+      if (!mainCategory) return;
+      
+      currentMainCategoryEl.textContent = `${mainCategory.name} - 小类列表`;
+      
+      // 筛选该大类下的小类
+      const subCategories = data.subCategories.filter(sub => sub.mainId === mainId);
+      
+      subCategoriesContainer.innerHTML = '';
+      
+      if (subCategories.length === 0) {
+        subCategoriesContainer.innerHTML = '<li class="text-neutral-500 italic">该大类下暂无小类</li>';
+      } else {
+        subCategories.forEach(sub => {
+          const subItem = document.createElement('li');
+          subItem.className = 'border-b border-neutral-100 pb-2 last:border-0 last:pb-0';
+          subItem.innerHTML = `
+            <button class="view-products w-full text-left py-2 hover:text-primary transition-colors" data-id="${sub.id}">
+              <span class="font-medium">${sub.name}</span>
+              <p class="text-sm text-neutral-500 mt-1">${sub.description || ''}</p>
+            </button>
+          `;
+          subCategoriesContainer.appendChild(subItem);
+        });
+        
+        // 添加查看产品事件
+        document.querySelectorAll('.view-products').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const subId = parseInt(e.currentTarget.dataset.id);
+            showProducts(subId);
+          });
+        });
+      }
+      
+      // 显示产品区域
+      productsSection.classList.remove('hidden');
+      // 滚动到产品区域
+      productsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // 显示产品
+    function showProducts(subId) {
+      const subCategory = data.subCategories.find(sub => sub.id === subId);
+      if (!subCategory) return;
+      
+      const mainCategory = data.mainCategories.find(main => main.id === subCategory.mainId);
+      
+      currentSubCategoryEl.textContent = `${mainCategory.name} - ${subCategory.name} - 产品列表`;
+      
+      // 筛选该小类下的产品
+      const products = data.products.filter(product => product.subId === subId);
+      
+      productsList.innerHTML = '';
+      
+      if (products.length === 0) {
+        noProductsEl.classList.remove('hidden');
+      } else {
+        noProductsEl.classList.add('hidden');
+        
+        products.forEach(product => {
+          const productItem = document.createElement('div');
+          productItem.className = 'border border-neutral-200 rounded-xl overflow-hidden card-hover';
+          productItem.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="md:col-span-1">
+                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover">
+              </div>
+              <div class="md:col-span-2 p-4">
+                <h4 class="text-lg font-bold mb-2">${product.name}</h4>
+                <div class="prose prose-sm text-neutral-600">${product.description}</div>
+              </div>
+            </div>
+          `;
+          productsList.appendChild(productItem);
+        });
+      }
+    }
+    
+    // 返回大类列表
+    function backToMainCategories() {
+      productsSection.classList.add('hidden');
+    }
+    
+    // 渲染后台管理
+    function renderAdmin() {
+      renderMainCategoriesTable();
+      renderMainSelectOptions();
+    }
+    
+    // 渲染大类表格
+    function renderMainCategoriesTable() {
+      mainCategoriesTable.innerHTML = '';
+      
+      data.mainCategories.forEach(category => {
+        // 计算小类数量
+        const subCount = data.subCategories.filter(sub => sub.mainId === category.id).length;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">${category.id}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${category.name}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${subCount}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex space-x-2">
+              <button class="edit-main-category text-primary hover:text-primary/80" data-id="${category.id}">
+                <i class="fa fa-pencil"></i>
+              </button>
+              <button class="delete-item text-red-500 hover:text-red-600" data-id="${category.id}" data-type="main">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        mainCategoriesTable.appendChild(row);
+      });
+      
+      // 添加编辑和删除事件
+      document.querySelectorAll('.edit-main-category').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = parseInt(e.currentTarget.dataset.id);
+          editMainCategory(id);
+        });
+      });
+      
+      document.querySelectorAll('.delete-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = parseInt(e.currentTarget.dataset.id);
+          const type = e.currentTarget.dataset.type;
+          showDeleteConfirmation(id, type);
+        });
+      });
+    }
+    
+    // 渲染大类选择框选项
+    function renderMainSelectOptions() {
+      // 保存当前选中值
+      const currentSubMainValue = selectMainForSub.value;
+      const currentProductMainValue = selectMainForProduct.value;
+      
+      // 清空选项
+      selectMainForSub.innerHTML = '<option value="">-- 选择大类 --</option>';
+      selectMainForProduct.innerHTML = '<option value="">-- 选择大类 --</option>';
+      
+      // 添加选项
+      data.mainCategories.forEach(category => {
+        const option1 = document.createElement('option');
+        option1.value = category.id;
+        option1.textContent = category.name;
+        selectMainForSub.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = category.id;
+        option2.textContent = category.name;
+        selectMainForProduct.appendChild(option2);
+      });
+      
+      // 恢复选中值
+      if (currentSubMainValue) selectMainForSub.value = currentSubMainValue;
+      if (currentProductMainValue) selectMainForProduct.value = currentProductMainValue;
+      
+      // 如果有选中值，触发change事件以更新相关内容
+      if (currentSubMainValue) {
+        selectMainForSub.dispatchEvent(new Event('change'));
+      }
+      
+      if (currentProductMainValue) {
+        selectMainForProduct.dispatchEvent(new Event('change'));
+      }
+    }
+    
+    // 渲染小类表格
+    function renderSubCategoriesTable(mainId) {
+      subCategoriesTable.innerHTML = '';
+      
+      let subCategories = [];
+      if (mainId) {
+        subCategories = data.subCategories.filter(sub => sub.mainId === mainId);
+      } else {
+        subCategories = data.subCategories;
+      }
+      
+      if (subCategories.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan="5" class="px-6 py-10 text-center text-neutral-500">
+            ${mainId ? '该大类下暂无小类' : '请先选择一个大类'}
+          </td>
+        `;
+        subCategoriesTable.appendChild(row);
+      } else {
+        subCategories.forEach(sub => {
+          const mainCategory = data.mainCategories.find(main => main.id === sub.mainId);
+          // 计算产品数量
+          const productCount = data.products.filter(p => p.subId === sub.id).length;
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">${sub.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${mainCategory ? mainCategory.name : '-'}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${sub.name}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${productCount}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex space-x-2">
+                <button class="edit-sub-category text-primary hover:text-primary/80" data-id="${sub.id}">
+                  <i class="fa fa-pencil"></i>
+                </button>
+                <button class="delete-item text-red-500 hover:text-red-600" data-id="${sub.id}" data-type="sub">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          subCategoriesTable.appendChild(row);
+        });
+        
+        // 添加编辑和删除事件
+        document.querySelectorAll('.edit-sub-category').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = parseInt(e.currentTarget.dataset.id);
+            editSubCategory(id);
+          });
+        });
+        
+        document.querySelectorAll('.delete-item').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = parseInt(e.currentTarget.dataset.id);
+            const type = e.currentTarget.dataset.type;
+            showDeleteConfirmation(id, type);
+          });
+        });
+      }
+    }
+    
+    // 渲染小类选择框选项
+    function renderSubSelectOptions(mainId) {
+      // 保存当前选中值
+      const currentValue = selectSubForProduct.value;
+      
+      // 清空选项
+      selectSubForProduct.innerHTML = '<option value="">-- 选择小类 --</option>';
+      
+      if (mainId) {
+        // 添加该大类下的小类
+        const subCategories = data.subCategories.filter(sub => sub.mainId === mainId);
+        subCategories.forEach(sub => {
+          const option = document.createElement('option');
+          option.value = sub.id;
+          option.textContent = sub.name;
+          selectSubForProduct.appendChild(option);
+        });
+        
+        // 恢复选中值（如果存在）
+        if (currentValue) {
+          const isOptionExist = Array.from(selectSubForProduct.options).some(
+            option => option.value === currentValue
+          );
+          if (isOptionExist) {
+            selectSubForProduct.value = currentValue;
+            selectSubForProduct.dispatchEvent(new Event('change'));
+          }
+        }
+      }
+    }
+    
+    // 渲染产品表格
+    function renderProductsTable(subId) {
+      productsTable.innerHTML = '';
+      
+      let products = [];
+      if (subId) {
+        products = data.products.filter(p => p.subId === subId);
+      } else if (selectMainForProduct.value) {
+        const mainId = parseInt(selectMainForProduct.value);
+        products = data.products.filter(p => p.mainId === mainId);
+      } else {
+        products = [];
+      }
+      
+      if (products.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan="5" class="px-6 py-10 text-center text-neutral-500">
+            ${subId ? '该小类下暂无产品' : '请先选择一个小类'}
+          </td>
+        `;
+        productsTable.appendChild(row);
+      } else {
+        products.forEach(product => {
+          const mainCategory = data.mainCategories.find(main => main.id === product.mainId);
+          const subCategory = data.subCategories.find(sub => sub.id === product.subId);
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">${product.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              ${mainCategory ? mainCategory.name : '-'} / ${subCategory ? subCategory.name : '-'}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">${product.name}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded">
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex space-x-2">
+                <button class="edit-product text-primary hover:text-primary/80" data-id="${product.id}">
+                  <i class="fa fa-pencil"></i>
+                </button>
+                <button class="delete-item text-red-500 hover:text-red-600" data-id="${product.id}" data-type="product">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          productsTable.appendChild(row);
+        });
+        
+        // 添加编辑和删除事件
+        document.querySelectorAll('.edit-product').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = parseInt(e.currentTarget.dataset.id);
+            editProduct(id);
+          });
+        });
+        
+        document.querySelectorAll('.delete-item').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = parseInt(e.currentTarget.dataset.id);
+            const type = e.currentTarget.dataset.type;
+            showDeleteConfirmation(id, type);
+          });
+        });
+      }
+    }
+    
+    // 切换到前台模式
+    function switchToFrontend() {
+      frontendView.classList.remove('hidden');
+      adminView.classList.add('hidden');
+      viewModeBtn.classList.remove('btn-outline');
+      viewModeBtn.classList.add('btn-primary');
+      adminModeBtn.classList.remove('btn-primary');
+      adminModeBtn.classList.add('btn-outline');
+    }
+    
+    // 切换到后台模式
+    function switchToAdmin() {
+      frontendView.classList.add('hidden');
+      adminView.classList.remove('hidden');
+      viewModeBtn.classList.remove('btn-primary');
+      viewModeBtn.classList.add('btn-outline');
+      adminModeBtn.classList.remove('btn-outline');
+      adminModeBtn.classList.add('btn-primary');
+      renderAdmin();
+    }
+    
+    // 切换管理标签页
+    function switchAdminTab(tabId) {
+      adminTabs.forEach(tab => {
+        if (tab.dataset.tab === tabId) {
+          tab.classList.add('border-primary', 'text-primary', 'font-medium');
+          tab.classList.remove('border-transparent', 'text-neutral-500');
+        } else {
+          tab.classList.remove('border-primary', 'text-primary', 'font-medium');
+          tab.classList.add('border-transparent', 'text-neutral-500');
+        }
+      });
+      
+      adminContents.forEach(content => {
+        if (content.id === `${tabId}-content`) {
+          content.classList.remove('hidden');
+        } else {
+          content.classList.add('hidden');
+        }
+      });
+    }
+    
+    // 显示添加大类模态框
+    function showAddMainCategoryModal() {
+      document.getElementById('main-category-modal-title').textContent = '添加大类';
+      document.getElementById('main-category-form').reset();
+      document.getElementById('main-category-id').value = '';
+      mainCategoryModal.classList.remove('hidden');
+    }
+    
+    // 编辑大类
+    function editMainCategory(id) {
+      const category = data.mainCategories.find(cat => cat.id === id);
+      if (!category) return;
+      
+      document.getElementById('main-category-modal-title').textContent = '编辑大类';
+      document.getElementById('main-category-id').value = category.id;
+      document.getElementById('main-category-name').value = category.name;
+      document.getElementById('main-category-desc').value = category.description || '';
+      
+      mainCategoryModal.classList.remove('hidden');
+    }
+    
+    // 保存大类
+    function saveMainCategory(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('main-category-id').value;
+      const name = document.getElementById('main-category-name').value.trim();
+      const description = document.getElementById('main-category-desc').value.trim();
+      
+      if (!name) return;
+      
+      if (id) {
+        // 更新现有大类
+        const index = data.mainCategories.findIndex(cat => cat.id === parseInt(id));
+        if (index !== -1) {
+          data.mainCategories[index] = {
+            ...data.mainCategories[index],
+            name,
+            description
+          };
+        }
+      } else {
+        // 添加新大类
+        const newId = data.mainCategories.length > 0 
+          ? Math.max(...data.mainCategories.map(cat => cat.id)) + 1 
+          : 1;
+        
+        data.mainCategories.push({
+          id: newId,
+          name,
+          description
+        });
+      }
+      
+      saveData();
+      mainCategoryModal.classList.add('hidden');
+      renderMainCategories();
+      renderMainCategoriesTable();
+      renderMainSelectOptions();
+    }
+    
+    // 显示添加小类模态框
+    function showAddSubCategoryModal() {
+      const mainId = parseInt(selectMainForSub.value);
+      if (!mainId) return;
+      
+      const mainCategory = data.mainCategories.find(cat => cat.id === mainId);
+      if (!mainCategory) return;
+      
+      document.getElementById('sub-category-modal-title').textContent = '添加小类';
+      document.getElementById('sub-category-form').reset();
+      document.getElementById('sub-category-id').value = '';
+      document.getElementById('sub-category-main-id').value = mainId;
+      document.getElementById('sub-category-main-name').value = mainCategory.name;
+      
+      subCategoryModal.classList.remove('hidden');
+    }
+    
+    // 编辑小类
+    function editSubCategory(id) {
+      const subCategory = data.subCategories.find(sub => sub.id === id);
+      if (!subCategory) return;
+      
+      const mainCategory = data.mainCategories.find(main => main.id === subCategory.mainId);
+      if (!mainCategory) return;
+      
+      document.getElementById('sub-category-modal-title').textContent = '编辑小类';
+      document.getElementById('sub-category-id').value = subCategory.id;
+      document.getElementById('sub-category-main-id').value = subCategory.mainId;
+      document.getElementById('sub-category-main-name').value = mainCategory.name;
+      document.getElementById('sub-category-name').value = subCategory.name;
+      document.getElementById('sub-category-desc').value = subCategory.description || '';
+      
+      subCategoryModal.classList.remove('hidden');
+    }
+    
+    // 保存小类
+    function saveSubCategory(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('sub-category-id').value;
+      const mainId = parseInt(document.getElementById('sub-category-main-id').value);
+      const name = document.getElementById('sub-category-name').value.trim();
+      const description = document.getElementById('sub-category-desc').value.trim();
+      
+      if (!name || !mainId) return;
+      
+      if (id) {
+        // 更新现有小类
+        const index = data.subCategories.findIndex(sub => sub.id === parseInt(id));
+        if (index !== -1) {
+          data.subCategories[index] = {
+            ...data.subCategories[index],
+            name,
+            description
+          };
+        }
+      } else {
+        // 添加新小类
+        const newId = data.subCategories.length > 0 
+          ? Math.max(...data.subCategories.map(sub => sub.id)) + 1 
+          : 1;
+        
+        data.subCategories.push({
+          id: newId,
+          mainId,
+          name,
+          description
+        });
+      }
+      
+      saveData();
+      subCategoryModal.classList.add('hidden');
+      renderSubCategoriesTable(mainId);
+      renderFrontend();
+    }
+    
+    // 显示添加产品模态框
+    function showAddProductModal() {
+      const subId = parseInt(selectSubForProduct.value);
+      if (!subId) return;
+      
+      const subCategory = data.subCategories.find(sub => sub.id === subId);
+      if (!subCategory) return;
+      
+      const mainCategory = data.mainCategories.find(main => main.id === subCategory.mainId);
+      if (!mainCategory) return;
+      
+      document.getElementById('product-modal-title').textContent = '添加产品';
+      document.getElementById('product-form').reset();
+      document.getElementById('product-id').value = '';
+      document.getElementById('product-main-id').value = mainCategory.id;
+      document.getElementById('product-sub-id').value = subCategory.id;
+      document.getElementById('product-main-name').value = mainCategory.name;
+      document.getElementById('product-sub-name').value = subCategory.name;
+      
+      productModal.classList.remove('hidden');
+    }
+    
+    // 编辑产品
+    function editProduct(id) {
+      const product = data.products.find(p => p.id === id);
+      if (!product) return;
+      
+      const subCategory = data.subCategories.find(sub => sub.id === product.subId);
+      if (!subCategory) return;
+      
+      const mainCategory = data.mainCategories.find(main => main.id === product.mainId);
+      if (!mainCategory) return;
+      
+      document.getElementById('product-modal-title').textContent = '编辑产品';
+      document.getElementById('product-id').value = product.id;
+      document.getElementById('product-main-id').value = product.mainId;
+      document.getElementById('product-sub-id').value = product.subId;
+      document.getElementById('product-main-name').value = mainCategory.name;
+      document.getElementById('product-sub-name').value = subCategory.name;
+      document.getElementById('product-name').value = product.name;
+      document.getElementById('product-image').value = product.image;
+      document.getElementById('product-desc').value = product.description;
+      
+      productModal.classList.remove('hidden');
+    }
+    
+    // 保存产品
+    function saveProduct(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('product-id').value;
+      const mainId = parseInt(document.getElementById('product-main-id').value);
+      const subId = parseInt(document.getElementById('product-sub-id').value);
+      const name = document.getElementById('product-name').value.trim();
+      const image = document.getElementById('product-image').value.trim();
+      const description = document.getElementById('product-desc').value.trim();
+      
+      if (!name || !image || !description || !mainId || !subId) return;
+      
+      if (id) {
+        // 更新现有产品
+        const index = data.products.findIndex(p => p.id === parseInt(id));
+        if (index !== -1) {
+          data.products[index] = {
+            ...data.products[index],
+            name,
+            image,
+            description
+          };
+        }
+      } else {
+        // 添加新产品
+        const newId = data.products.length > 0 
+          ? Math.max(...data.products.map(p => p.id)) + 1 
+          : 1;
+        
+        data.products.push({
+          id: newId,
+          mainId,
+          subId,
+          name,
+          image,
+          description
+        });
+      }
+      
+      saveData();
+      productModal.classList.add('hidden');
+      renderProductsTable(subId);
+      renderFrontend();
+    }
+    
+    // 显示删除确认
+    function showDeleteConfirmation(id, type) {
+      document.getElementById('delete-id').value = id;
+      document.getElementById('delete-type').value = type;
+      
+      let itemName = '';
+      if (type === 'main') {
+        const item = data.mainCategories.find(cat => cat.id === id);
+        itemName = item ? item.name : '该大类';
+      } else if (type === 'sub') {
+        const item = data.subCategories.find(sub => sub.id === id);
+        itemName = item ? item.name : '该小类';
+      } else if (type === 'product') {
+        const item = data.products.find(p => p.id === id);
+        itemName = item ? item.name : '该产品';
+      }
+      
+      document.getElementById('delete-confirmation-text').textContent = 
+        `您确定要删除 ${itemName} 吗？此操作无法撤销。`;
+      
+      confirmDeleteModal.classList.remove('hidden');
+    }
+    
+    // 确认删除
+    function confirmDelete() {
+      const id = parseInt(document.getElementById('delete-id').value);
+      const type = document.getElementById('delete-type').value;
+      
+      if (type === 'main') {
+        // 删除大类前先删除其下的小类和产品
+        const subIds = data.subCategories
+          .filter(sub => sub.mainId === id)
+          .map(sub => sub.id);
+          
+        // 删除相关产品
+        data.products = data.products.filter(p => !subIds.includes(p.subId));
+        
+        // 删除相关小类
+        data.subCategories = data.subCategories.filter(sub => sub.mainId !== id);
+        
+        // 删除大类
+        data.mainCategories = data.mainCategories.filter(cat => cat.id !== id);
+        
+        // 更新选择框
+        if (selectMainForSub.value == id) {
+          selectMainForSub.value = '';
+          renderSubCategoriesTable();
+        }
+        
+        if (selectMainForProduct.value == id) {
+          selectMainForProduct.value = '';
+          selectSubForProduct.value = '';
+          selectSubForProduct.disabled = true;
+          renderProductsTable();
+        }
+      } else if (type === 'sub') {
+        // 删除小类前先删除其下的产品
+        data.products = data.products.filter(p => p.subId !== id);
+        
+        // 删除小类
+        data.subCategories = data.subCategories.filter(sub => sub.id !== id);
+        
+        // 更新选择框
+        if (selectSubForProduct.value == id) {
+          selectSubForProduct.value = '';
+          renderProductsTable();
+        }
+        
+        // 如果当前正在查看该小类的产品，重新渲染
+        renderSubCategoriesTable(parseInt(selectMainForSub.value));
+      } else if (type === 'product') {
+        // 删除产品
+        data.products = data.products.filter(p => p.id !== id);
+        
+        // 重新渲染产品表格
+        renderProductsTable(parseInt(selectSubForProduct.value) || parseInt(selectMainForProduct.value));
+      }
+      
+      saveData();
+      confirmDeleteModal.classList.add('hidden');
+      
+      // 更新相关视图
+      renderMainCategories();
+      renderMainCategoriesTable();
+      renderMainSelectOptions();
+    }
+    
+    // 设置事件监听器
+    function setupEventListeners() {
+      // 切换前台/后台模式
+      viewModeBtn.addEventListener('click', switchToFrontend);
+      adminModeBtn.addEventListener('click', switchToAdmin);
+      
+      // 返回大类列表
+      backToMainBtn.addEventListener('click', backToMainCategories);
+      
+      // 后台标签页切换
+      adminTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          switchAdminTab(tab.dataset.tab);
+        });
+      });
+      
+      // 添加大类
+      document.getElementById('add-main-category-btn').addEventListener('click', showAddMainCategoryModal);
+      
+      // 保存大类
+      document.getElementById('main-category-form').addEventListener('submit', saveMainCategory);
+      
+      // 取消添加/编辑大类
+      document.getElementById('cancel-main-category').addEventListener('click', () => {
+        mainCategoryModal.classList.add('hidden');
+      });
+      
+      // 大类选择变化（小类管理）
+      selectMainForSub.addEventListener('change', () => {
+        const mainId = parseInt(selectMainForSub.value);
+        document.getElementById('add-sub-category-btn').disabled = !mainId;
+        renderSubCategoriesTable(mainId);
+      });
+      
+      // 添加小类
+      document.getElementById('add-sub-category-btn').addEventListener('click', showAddSubCategoryModal);
+      
+      // 保存小类
+      document.getElementById('sub-category-form').addEventListener('submit', saveSubCategory);
+      
+      // 取消添加/编辑小类
+      document.getElementById('cancel-sub-category').addEventListener('click', () => {
+        subCategoryModal.classList.add('hidden');
+      });
+      
+      // 大类选择变化（产品管理）
+      selectMainForProduct.addEventListener('change', () => {
+        const mainId = parseInt(selectMainForProduct.value);
+        selectSubForProduct.disabled = !mainId;
+        selectSubForProduct.value = '';
+        document.getElementById('add-product-btn').disabled = true;
+        
+        renderSubSelectOptions(mainId);
+        renderProductsTable();
+      });
+      
+      // 小类选择变化（产品管理）
+      selectSubForProduct.addEventListener('change', () => {
+        const subId = parseInt(selectSubForProduct.value);
+        document.getElementById('add-product-btn').disabled = !subId;
+        renderProductsTable(subId);
+      });
+      
+      // 添加产品
+      document.getElementById('add-product-btn').addEventListener('click', showAddProductModal);
+      
+      // 保存产品
+      document.getElementById('product-form').addEventListener('submit', saveProduct);
+      
+      // 取消添加/编辑产品
+      document.getElementById('cancel-product').addEventListener('click', () => {
+        productModal.classList.add('hidden');
+      });
+      
+      // 取消删除
+      document.getElementById('cancel-delete').addEventListener('click', () => {
+        confirmDeleteModal.classList.add('hidden');
+      });
+      
+      // 确认删除
+      document.getElementById('confirm-delete').addEventListener('click', confirmDelete);
+      
+      // 点击模态框背景关闭
+      modalOverlays.forEach(overlay => {
+        overlay.addEventListener('click', () => {
+          mainCategoryModal.classList.add('hidden');
+          subCategoryModal.classList.add('hidden');
+          productModal.classList.add('hidden');
+          confirmDeleteModal.classList.add('hidden');
+        });
+      });
+      
+      // 按ESC键关闭模态框
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          mainCategoryModal.classList.add('hidden');
+          subCategoryModal.classList.add('hidden');
+          productModal.classList.add('hidden');
+          confirmDeleteModal.classList.add('hidden');
+        }
+      });
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
